@@ -1,13 +1,24 @@
 import curses
 
+
 def main(stdscr: curses.window):
     stdscr.keypad(True)
+    
+    curses.curs_set(0)
+    curses.start_color()
+
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
 
-    top: str = "Press 'q' to quit"
+    attempts: int = 4
+
     while True:
         stdscr.clear()
-        stdscr.addstr(0, 0, top)
+        stdscr.addstr(0, 0, "ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL", curses.color_pair(1))
+        stdscr.addstr(1, 0, "ENTER PASSWORD NOW", curses.color_pair(1))
+
+        stdscr.addstr(3, 0, f"{attempts} ATTEMPT(S) LEFT:{' ■' * attempts}", curses.color_pair(1))
+
         key = stdscr.getch()
 
         if key == ord('q'):
