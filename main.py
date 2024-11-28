@@ -1,6 +1,8 @@
 import curses
 import random
 
+PAD_CHARS: list[str] = ['<', '>', '{', '}', '[', ']', '(', ')', '|', '\\', '+', '?', '!', '$', ':', ';', '\'', '*', '_', '-', '"', '.', ',', '=', '@', '%']
+
 def get_hex_codes() -> list[str]:
     """Generates a list containing random hexidecimal numbers
 
@@ -67,10 +69,44 @@ def get_words(words_list: dict[int, list[str]]) -> list[str]:
         )
     return words_used
 
+
+def get_word_sequence(word_options: list[str]) -> list[str]:
+    """Generates a sequence of words and random characters
+
+    Args:
+        word_options (list[str]): The words to put into the sequence
+
+    Returns:
+        list[str]: A list of length 34 containing 12 character strings made up
+        of random symbols and the provided words
+    """
+
+    pad_length: int = 408 - len(word_options[0]) * len(word_options)
+    word_sequence: list[str] = ['']
+    for word in word_options:
+        max_pad: int = pad_length // 4
+        for i in range(random.randint(2, max_pad)):
+            if len(word_sequence[len(word_sequence) - 1]) == 12:
+                word_sequence.append('')
+            word_sequence[len(word_sequence) - 1] += PAD_CHARS[random.randrange(0, len(PAD_CHARS))]
+            pad_length -= 1
+
+        for char in word:
+            if len(word_sequence[len(word_sequence) - 1]) == 12:
+                word_sequence.append('')
+            word_sequence[len(word_sequence) - 1] += char
+
+    for i in range(pad_length):
+        if len(word_sequence[len(word_sequence) - 1]) == 12:
+            word_sequence.append('')
+        word_sequence[len(word_sequence) - 1] += PAD_CHARS[random.randrange(0, len(PAD_CHARS))]
+    return word_sequence
+
 def update_screen(
     stdscr: curses.window,
     attempts: int,
-    hex_codes: list[str]
+    hex_codes: list[str],
+    word_sequence: list[str]
 ):
     """Updates the terminal screen
     
@@ -78,6 +114,7 @@ def update_screen(
         stdscr (curses.window): The window to display the game on
         attempts (int): The number of guesses remaining
         hex_codes (list[str]): The hex codes to display on the sides
+        word_sequence (list[str]): The lines with the words to display
     """
 
     stdscr.clear()
@@ -87,10 +124,14 @@ def update_screen(
     stdscr.addstr(3, 0, f"{attempts} ATTEMPT(S) LEFT:{' ■' * attempts}", curses.color_pair(1))
 
     for i in range(len(hex_codes)):
-        y_pos = 5 + (i % 17)
-        x_pos = 21 * (i // 17)
-        print(y_pos, x_pos)
+        y_pos: int = 5 + (i % 17)
+        x_pos: int = 21 * (i // 17)
         stdscr.addstr(y_pos, x_pos, hex_codes[i], curses.color_pair(1))
+
+    for i in range(len(word_sequence)):
+        y_pos: int = 5 + (i % 17)
+        x_pos: int = 8 + (21 * (i // 17))
+        stdscr.addstr(y_pos, x_pos, word_sequence[i], curses.color_pair(1))
 
     stdscr.refresh()
 
@@ -100,7 +141,7 @@ def main(stdscr: curses.window):
     attempts: int = 4
 
     word_options: list[str] = get_words(words_list)
-    word_sequence = get_word_sequence(word_options)
+    word_sequence: list[str] = get_word_sequence(word_options)
 
     hex_codes: list[str] = get_hex_codes()
 
@@ -112,7 +153,7 @@ def main(stdscr: curses.window):
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
 
-    update_screen(stdscr, attempts, hex_codes)
+    update_screen(stdscr, attempts, hex_codes, word_sequence)
     while True:
         key = stdscr.getch()
 
