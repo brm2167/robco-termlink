@@ -69,6 +69,20 @@ def get_words(words_list: dict[int, list[str]]) -> list[str]:
         )
     return words_used
 
+def add_to_sequence(word_sequence: list[str], add: str, line_cap: int = 12):
+    """Adds a set of letters to a word sequence, and creates new strings when
+    the program has gone above the maximum line length
+
+    Args:
+        word_sequence (list[str]): A list of words and random symbols
+        add (str): The string to add character by character to the sequence
+        line_cap (int, optional): The maximum number of characters per line
+    """
+
+    for char in add:
+        if len(word_sequence[len(word_sequence) - 1]) == line_cap:
+            word_sequence.append('')
+        word_sequence[len(word_sequence) - 1] += char
 
 def get_word_sequence(word_options: list[str]) -> list[str]:
     """Generates a sequence of words and random characters
@@ -85,21 +99,20 @@ def get_word_sequence(word_options: list[str]) -> list[str]:
     word_sequence: list[str] = ['']
     for word in word_options:
         max_pad: int = pad_length // 4
+
+        symbols: str = ''
         for i in range(random.randint(2, max_pad)):
-            if len(word_sequence[len(word_sequence) - 1]) == 12:
-                word_sequence.append('')
-            word_sequence[len(word_sequence) - 1] += PAD_CHARS[random.randrange(0, len(PAD_CHARS))]
+            symbols += PAD_CHARS[random.randrange(0, len(PAD_CHARS))]
             pad_length -= 1
+        add_to_sequence(word_sequence, symbols)
 
-        for char in word:
-            if len(word_sequence[len(word_sequence) - 1]) == 12:
-                word_sequence.append('')
-            word_sequence[len(word_sequence) - 1] += char
+        add_to_sequence(word_sequence, word)
 
+    symbols: str = ''
     for i in range(pad_length):
-        if len(word_sequence[len(word_sequence) - 1]) == 12:
-            word_sequence.append('')
-        word_sequence[len(word_sequence) - 1] += PAD_CHARS[random.randrange(0, len(PAD_CHARS))]
+        symbols += PAD_CHARS[random.randrange(0, len(PAD_CHARS))]
+    add_to_sequence(word_sequence, symbols)
+
     return word_sequence
 
 def update_screen(
